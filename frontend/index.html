@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Flask App</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to the Flask App</h1>
+    
+    <!-- Input form to add data -->
+    <form id="dataForm">
+        <input type="text" id="name" placeholder="Enter name" required>
+        <button type="submit">Add</button>
+    </form>
+    
+    <h2>Data:</h2>
+    <!-- Table to display names -->
+    <table id="dataTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+            </tr>
+        </thead>
+        <tbody id="data"></tbody> <!-- Data will be inserted here -->
+    </table>
+    
+    <script>
+        // Function to fetch and display data in table format
+        function fetchData() {
+            fetch('http://localhost:5000/')
+                .then(response => response.json())
+                .then(data => {
+                    let tableBody = document.getElementById('data');
+                    tableBody.innerHTML = '';  // Clear the table before adding new rows
+
+                    // Loop through the data and create a table row for each record
+                    data.forEach(record => {
+                        let row = document.createElement('tr');
+                        let cellId = document.createElement('td');
+                        let cellName = document.createElement('td');
+                        cellId.innerText = record.id;
+                        cellName.innerText = record.name;
+                        
+                        row.appendChild(cellId);
+                        row.appendChild(cellName);
+                        tableBody.appendChild(row);
+                    });
+                })
+                .catch(error => {
+                    document.getElementById('data').innerText = 'Error: ' + error;
+                });
+        }
+
+        // Handle form submission
+        document.getElementById('dataForm').addEventListener('submit', function(event) {
+            event.preventDefault();  // Prevent the default form submission
+            
+            // Get the value from the input field
+            const name = document.getElementById('name').value;
+            
+            // Send the data to the backend via a POST request
+            fetch('http://localhost:5000/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name: name }),  // Send the name as a JSON object
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Display the response from the backend (Optional, you can show a message or status)
+                document.getElementById('data').innerText = JSON.stringify(data, null, 2);
+                
+                // Fetch the latest data and display it (in table format)
+                fetchData();
+                
+                // Optionally clear the input field after submitting
+                document.getElementById('name').value = '';
+            })
+            .catch(error => {
+                document.getElementById('data').innerText = 'Error: ' + error;
+            });
+        });
+
+        // Fetch data on initial load
+        window.onload = fetchData;
+    </script>
+</body>
+</html>
