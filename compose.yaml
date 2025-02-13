@@ -1,40 +1,33 @@
 services:
-  mysql_db:
+  db:
     image: mysql
+    container_name: mysql
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: exampledb
-      MYSQL_USER: admin
+      MYSQL_ROOT_PASSWORD: root 
+      MYSQL_USERNAME: admin
       MYSQL_PASSWORD: admin
-    volumes:
-      - db_data:/var/lib/mysql
-      - ./db/setup.sql:/docker-entrypoint-initdb.d/setup.sql
+      MYSQL_DATABASE: exampledb
     ports:
-      - 3306:3306
+      - 3036:3036
+    volumes:
+      - db_mysql:/var/lib/mysql
+      - ./db/setup.sql:/docker-entrypoint-initdb.d/setup.sql
     networks:
       - app-network
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 30s
-      retries: 5
-      start_period: 30s
-      timeout: 10s
-
   backend:
     build: ./backend
     container_name: backend
     environment:
-      MYSQL_HOST: mysql_db
-      MYSQL_USER: root
+      MYSQL_HOST: db
+      MYSQL_USERNAME: root
       MYSQL_PASSWORD: root
-      MYSQL_DB: exampledb
+      MYSQL_DATABASE: exampledb
+    ports:
+      - 5000:5000
     networks:
       - app-network
     depends_on:
-      - mysql_db
-    ports:
-      - 5000:5000
-
+      - db
   frontend:
     build: ./frontend
     container_name: frontend
@@ -42,11 +35,9 @@ services:
       - 80:80
     networks:
       - app-network
-
   nginx:
     build: ./nginx
-    ports:
-      - 3458:80
+    container_name: nginx
     networks:
       - app-network
     depends_on:
@@ -57,5 +48,6 @@ networks:
   app-network:
     driver: bridge
 
+
 volumes:
-  db_data:
+  db_mysql:
