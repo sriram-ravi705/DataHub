@@ -35,14 +35,14 @@ services:
       - 80:80
     networks:
       - app-network
-  nginx:
-    build: ./nginx
-    container_name: nginx
-    networks:
-      - app-network
-    depends_on:
-      - frontend
-      - backend
+  # nginx:
+  #   build: ./nginx
+  #   container_name: nginx
+  #   networks:
+  #     - app-network
+  #   depends_on:
+  #     - frontend
+  #     - backend
 
 networks:
   app-network:
